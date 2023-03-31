@@ -1,0 +1,2 @@
+require 'musicrb/musicrb'
+
