@@ -1,4 +1,4 @@
-# Music RB
+a# Music RB
 A player for music to our Ruby ❤️
 
 ## Requirement
@@ -6,7 +6,7 @@ The lib [vlc](https://www.videolan.org/) is required to use this gem.
 
 To install the lib vlc on Ubuntu
 ```sh
-sudo apt-get install libvlc-dev
+sudo apt-get install vlc libvlc-dev
 ```
 
 ## Usage
