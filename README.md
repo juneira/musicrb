@@ -10,6 +10,11 @@ sudo apt-get install libvlc-dev
 ```
 
 ## Usage
+Install gem:
+```
+gem install musicrb
+``
+
 To play a music:
 ```ruby
 Music.play("/path/of/music.mp3")
