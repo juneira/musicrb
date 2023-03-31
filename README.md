@@ -13,7 +13,7 @@ sudo apt-get install libvlc-dev
 Install gem:
 ```
 gem install musicrb
-``
+```
 
 To play a music:
 ```ruby
