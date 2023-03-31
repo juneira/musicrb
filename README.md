@@ -1,4 +1,4 @@
-a# Music RB
+# Music RB
 A player for music to our Ruby ❤️
 
 ## Requirement
