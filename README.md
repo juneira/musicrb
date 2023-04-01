@@ -15,13 +15,14 @@ Install gem:
 gem install musicrb
 ```
 
-To play a music:
+Play/Stop music:
 ```ruby
-Music.play("/path/of/music.mp3")
-```
+require 'musicrb'
 
-To stop a music:
-```ruby
+# To play a music
+Music.play("/path/of/music.mp3")
+
+#To stop
 Music.stop
 ```
 
