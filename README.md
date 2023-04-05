@@ -28,6 +28,13 @@ Music.play("/path/of/music.mp3")
 Music.stop
 ```
 
+## Tests
+
+To run tests:
+```ruby
+rake test
+```
+
 ## Important!
 
 This gem was tested only on:
