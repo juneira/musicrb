@@ -24,7 +24,7 @@ require 'musicrb'
 # To play a music
 Music.play("/path/of/music.mp3")
 
-#To stop
+# To stop
 Music.stop
 ```
 
