@@ -1,4 +1,4 @@
-Gem::Specification.new "musicrb", "0.0.0" do |s|
+Gem::Specification.new "musicrb", "0.1.0" do |s|
   s.summary     = "A player for music"
   s.description = "A player for music"
   s.authors     = ["juneira"]
