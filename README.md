@@ -6,7 +6,7 @@ The lib [vlc](https://www.videolan.org/) is required to use this gem.
 
 To install the lib vlc on Ubuntu
 ```sh
-sudo apt-get install libvlc-dev
+sudo apt-get install vlc libvlc-dev
 ```
 
 ## Usage
@@ -15,13 +15,14 @@ Install gem:
 gem install musicrb
 ```
 
-To play a music:
+Play/Stop music:
 ```ruby
-Music.play("/path/of/music.mp3")
-```
+require 'musicrb'
 
-To stop a music:
-```ruby
+# To play a music
+Music.play("/path/of/music.mp3")
+
+#To stop
 Music.stop
 ```
 
