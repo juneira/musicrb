@@ -1,7 +1,7 @@
 require 'minitest/autorun'
 require 'musicrb'
 
-class MusicrbTest < Minitest::Test
+class MusicTest < Minitest::Test
   def test_play_when_file_exists
     result = Music.play("#{__dir__}/fixtures/test.mp3")
     Music.stop
