@@ -21,10 +21,10 @@ class Music
     end
 
     def play
-      @current_media = 0 if @current_media == -1 || @current_media >= @list.length
+      @current_media = 0 if @current_media >= @list.length
       media = @list[@current_media]
 
-      @list.first&.play
+      media&.play
 
       media
     end

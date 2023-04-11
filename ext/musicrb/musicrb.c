@@ -45,9 +45,6 @@ intern_stop()
   /* Stop playing */
   libvlc_media_player_stop(mp);
 
-  /* Free the media */
-  libvlc_media_release(m);
-
   /* Free the media_player */
   libvlc_media_player_release(mp);
   
@@ -124,8 +121,7 @@ rb_media_load(VALUE mda, VALUE rpath)
   if(title == NULL || artist == NULL || album == NULL || genre == NULL) return Qnil;
 
   /* Convert to a Ruby type */
-  /* TODO: Create a function to free the memory */
-  VALUE rbmedia = Data_Wrap_Struct(rb_cObject, 0, NULL, cmedia);
+  VALUE rbmedia = Data_Wrap_Struct(rb_cObject, 0, free, cmedia);
 
   /* Call Media.new */
   VALUE media_obj = rb_funcall(rb_cMedia, rb_intern("new"), 0);

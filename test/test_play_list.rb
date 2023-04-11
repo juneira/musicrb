@@ -38,8 +38,16 @@ class PlayListTest < Minitest::Test
     assert_equal e.to_s, 'File does not exist'
   end
 
-  def test_play_with_valid_media
+  def test_play_once
     play_list = load_medias
+    media = play_list.play
+
+    assert_equal [media.title, media.artist, media.album, media.genre], FIRST_MUSIC_METADATA
+  end
+
+  def test_play_twice
+    play_list = load_medias
+    play_list.play
     media = play_list.play
 
     assert_equal [media.title, media.artist, media.album, media.genre], FIRST_MUSIC_METADATA
