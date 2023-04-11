@@ -60,13 +60,31 @@ class PlayListTest < Minitest::Test
     assert_equal [media.title, media.artist, media.album, media.genre], SECOND_MUSIC_METADATA
   end
 
-  def test_prev
+  def test_next_twice
+    play_list = load_medias
+    play_list.next
+    media = play_list.next
+
+    assert_equal [media.title, media.artist, media.album, media.genre], FIRST_MUSIC_METADATA
+  end
+
+  def test_prev_once
     play_list = load_medias
     play_list.instance_variable_set(:@current_media, 1)
 
     media = play_list.prev
 
     assert_equal [media.title, media.artist, media.album, media.genre], FIRST_MUSIC_METADATA
+  end
+
+  def test_prev_twice
+    play_list = load_medias
+    play_list.instance_variable_set(:@current_media, 1)
+
+    play_list.prev
+    media = play_list.prev
+
+    assert_equal [media.title, media.artist, media.album, media.genre], SECOND_MUSIC_METADATA
   end
 
   private
