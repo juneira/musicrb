@@ -40,6 +40,12 @@ rb_music_meta(VALUE msc)
 	return meta;
 }
 
+VALUE
+rb_music_time(VALUE msc)
+{
+	return INT2NUM(libvlc_media_player_get_time(mp));
+}
+
 void
 intern_stop()
 {
@@ -101,6 +107,36 @@ rb_music_play(VALUE msc, VALUE rpath)
 	intern_play(cmedia);
 
 	return rb_music_meta(msc);
+}
+
+VALUE
+rb_music_forward(VALUE msc, VALUE rseconds)
+{
+	if(mp == NULL) return Qnil;
+
+	int cseconds = NUM2INT(rseconds);
+	int time = libvlc_media_player_get_time(mp);
+
+	libvlc_media_player_set_time(mp, time + cseconds);
+
+	return Qnil;
+}
+
+VALUE
+rb_music_backward(VALUE msc, VALUE rseconds)
+{
+	if(mp == NULL) return Qnil;
+
+	int cseconds = NUM2INT(rseconds);
+	int time = libvlc_media_player_get_time(mp);
+
+	int current_time = time - cseconds;
+
+	if(current_time < 0) current_time = 0;
+
+	libvlc_media_player_set_time(mp, current_time);
+
+	return Qnil;
 }
 
 VALUE
@@ -169,8 +205,11 @@ Init_musicrb(void)
 
 	rb_cMusic = rb_const_get(rb_cObject, rb_intern("Music"));
 	rb_define_singleton_method(rb_cMusic, "play", rb_music_play, 1);
+	rb_define_singleton_method(rb_cMusic, "forward", rb_music_forward, 1);
+	rb_define_singleton_method(rb_cMusic, "backward", rb_music_backward, 1);
 	rb_define_singleton_method(rb_cMusic, "stop", rb_music_stop, 0);
 	rb_define_singleton_method(rb_cMusic, "meta", rb_music_meta, 0);
+	rb_define_singleton_method(rb_cMusic, "time", rb_music_time, 0);
 
 	rb_cMedia = rb_const_get(rb_cMusic, rb_intern("Media"));
 	rb_define_singleton_method(rb_cMedia, "load", rb_media_load, 1);
