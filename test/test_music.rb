@@ -33,6 +33,7 @@ class MusicTest < Minitest::Test
 
   def test_play_when_file_does_not_exist
     Music.play("#{__dir__}/fixtures/does_not_exist.mp3")
+    raise 'error: test_play_when_file_does_not_exist'
   rescue ArgumentError => e
     assert_equal e.to_s, 'File does not exist'
   end
