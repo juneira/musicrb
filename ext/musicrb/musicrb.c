@@ -43,7 +43,27 @@ rb_music_meta(VALUE msc)
 VALUE
 rb_music_time(VALUE msc)
 {
+	if(mp == NULL) return Qnil;
+
 	return INT2NUM(libvlc_media_player_get_time(mp));
+}
+
+VALUE
+rb_music_volume(VALUE msc)
+{
+	if(mp == NULL) return Qnil;
+
+	return INT2NUM(libvlc_audio_get_volume(mp));
+}
+
+VALUE
+rb_music_set_volume(VALUE msc, VALUE rvolume)
+{
+	if(mp == NULL) return Qnil;
+
+	libvlc_audio_set_volume(mp, NUM2INT(rvolume));
+
+	return rvolume;
 }
 
 void
@@ -71,7 +91,8 @@ rb_music_stop(VALUE msc)
 	return Qnil;
 }
 
-void intern_play(libvlc_media_t *cmedia)
+void
+intern_play(libvlc_media_t *cmedia)
 {
 	/* Stop music if already playing */
 	if (mp != NULL)
@@ -220,6 +241,8 @@ Init_musicrb(void)
 	rb_define_singleton_method(rb_cMusic, "stop", rb_music_stop, 0);
 	rb_define_singleton_method(rb_cMusic, "meta", rb_music_meta, 0);
 	rb_define_singleton_method(rb_cMusic, "time", rb_music_time, 0);
+	rb_define_singleton_method(rb_cMusic, "volume", rb_music_volume, 0);
+	rb_define_singleton_method(rb_cMusic, "volume=", rb_music_set_volume, 1);
 
 	rb_cMedia = rb_const_get(rb_cMusic, rb_intern("Media"));
 	rb_define_singleton_method(rb_cMedia, "load", rb_media_load, 1);
