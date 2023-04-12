@@ -110,30 +110,40 @@ rb_music_play(VALUE msc, VALUE rpath)
 }
 
 VALUE
-rb_music_forward(VALUE msc, VALUE rseconds)
+rb_music_forward(VALUE msc, VALUE rmseconds)
 {
 	if(mp == NULL) return Qnil;
 
-	int cseconds = NUM2INT(rseconds);
+	/* Convert number of Ruby to int of C */
+	int cmseconds = NUM2INT(rmseconds);
+
+	/* Get time of media player */
 	int time = libvlc_media_player_get_time(mp);
 
-	libvlc_media_player_set_time(mp, time + cseconds);
+	/* Add milliseconds for this time */
+	libvlc_media_player_set_time(mp, time + cmseconds);
 
 	return Qnil;
 }
 
 VALUE
-rb_music_backward(VALUE msc, VALUE rseconds)
+rb_music_backward(VALUE msc, VALUE rmseconds)
 {
 	if(mp == NULL) return Qnil;
 
-	int cseconds = NUM2INT(rseconds);
+	/* Convert number of Ruby to int of C */
+	int cmseconds = NUM2INT(rmseconds);
+
+	/* Get time of media player */
 	int time = libvlc_media_player_get_time(mp);
 
-	int current_time = time - cseconds;
+	/* Remove milliseconds for this time */
+	int current_time = time - cmseconds;
 
+	/* Ensure that value is positive */
 	if(current_time < 0) current_time = 0;
 
+	/* Set the time */
 	libvlc_media_player_set_time(mp, current_time);
 
 	return Qnil;
