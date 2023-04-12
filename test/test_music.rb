@@ -2,6 +2,8 @@ require 'minitest/autorun'
 require 'musicrb'
 
 class MusicTest < Minitest::Test
+  MILLISECONDS = 1_000
+
   def test_play_when_file_exists
     result = Music.play("#{__dir__}/fixtures/test.mp3")
     Music.stop
@@ -51,5 +53,77 @@ class MusicTest < Minitest::Test
     Music.stop
 
     assert_nil Music.meta
+  end
+
+  def test_forward_10_seconds
+    forward_in_seconds = 10 * MILLISECONDS # 10 seconds
+
+    Music.play("#{__dir__}/fixtures/test.mp3")
+    Music.forward(forward_in_seconds)
+
+    assert_equal Music.time, forward_in_seconds
+  end
+
+  def test_forward_20_seconds
+    forward_in_seconds = 20 * MILLISECONDS # 20 seconds
+
+    Music.play("#{__dir__}/fixtures/test.mp3")
+    Music.forward(forward_in_seconds)
+
+    assert_equal Music.time, forward_in_seconds
+  end
+
+  def test_forward_30_seconds
+    forward_in_seconds = 30 * MILLISECONDS # 30 seconds
+
+    Music.play("#{__dir__}/fixtures/test.mp3")
+    Music.forward(forward_in_seconds)
+
+    assert_equal Music.time, forward_in_seconds
+  end
+
+  def test_backward_10_seconds
+    backward_in_seconds = 10 * MILLISECONDS # 10 seconds
+
+    # Media initialized in 30 seconds
+    Music.play("#{__dir__}/fixtures/test.mp3")
+    Music.forward(30 * 1000) # 30 seconds
+
+    Music.backward(backward_in_seconds)
+
+    assert_equal Music.time, 20 * MILLISECONDS
+  end
+
+  def test_backward_20_seconds
+    backward_in_seconds = 20 * MILLISECONDS # 20 seconds
+
+    # Media initialized in 30 seconds
+    Music.play("#{__dir__}/fixtures/test.mp3")
+    Music.forward(30 * 1000) # 30 seconds
+
+    Music.backward(backward_in_seconds)
+
+    assert_equal Music.time, 10 * MILLISECONDS
+  end
+
+  def test_backward_30_seconds
+    backward_in_seconds = 30 * MILLISECONDS # 30 seconds
+
+    # Media initialized in 30 seconds
+    Music.play("#{__dir__}/fixtures/test.mp3")
+    Music.forward(30 * 1000) # 30 seconds
+
+    Music.backward(backward_in_seconds)
+
+    assert_equal Music.time, 0 * MILLISECONDS
+  end
+
+  def test_backward_10_seconds_when_media_has_less_10_seconds_playing
+    backward_in_seconds = 10 * MILLISECONDS # 10 seconds
+
+    Music.play("#{__dir__}/fixtures/test.mp3")
+    Music.backward(backward_in_seconds)
+
+    assert_equal Music.time, 0 * MILLISECONDS
   end
 end
