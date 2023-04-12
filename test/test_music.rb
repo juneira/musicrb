@@ -126,4 +126,31 @@ class MusicTest < Minitest::Test
 
     assert_equal Music.time, 0 * MILLISECONDS
   end
+
+  def test_volume_0_percent
+    volume = 0 # 0 %
+
+    Music.play("#{__dir__}/fixtures/test.mp3")
+    Music.volume = volume
+
+    assert_equal Music.volume, volume
+  end
+
+  def test_volume_50_percent
+    volume = 50 # 50 %
+
+    Music.play("#{__dir__}/fixtures/test.mp3")
+    Music.volume = volume
+
+    assert_equal Music.volume, volume
+  end
+
+  def test_volume_100_percent
+    volume = 100 # 100 %
+
+    Music.play("#{__dir__}/fixtures/test.mp3")
+    Music.volume = volume
+
+    assert_equal Music.volume, volume
+  end
 end
