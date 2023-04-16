@@ -7,94 +7,298 @@
 #include <unistd.h>
 
 VALUE rb_cMusic;
+VALUE rb_cMedia;
+VALUE rb_cPlayList;
 
-libvlc_instance_t* inst;
-libvlc_media_t* m;
-libvlc_media_player_t* mp;
+libvlc_instance_t *inst;
+libvlc_media_t *m;
+libvlc_media_player_t *mp;
+libvlc_event_manager_t *em;
 
 VALUE
 rb_music_meta(VALUE msc)
 {
-  if(m == NULL || mp == NULL) return Qnil;
+	if (m == NULL || mp == NULL)
+		return Qnil;
 
-  libvlc_state_t state = libvlc_media_player_get_state(mp);
-  if(state != libvlc_Playing) return Qnil;
+	libvlc_state_t state = libvlc_media_player_get_state(mp);
+	if (state != libvlc_Playing)
+		return Qnil;
 
-  char *title = libvlc_media_get_meta(m, libvlc_meta_Title);
-  char *artist = libvlc_media_get_meta(m, libvlc_meta_Artist);
-  char *album = libvlc_media_get_meta(m, libvlc_meta_Album);
-  char *genre = libvlc_media_get_meta(m, libvlc_meta_Genre);
+	char *title = libvlc_media_get_meta(m, libvlc_meta_Title);
+	char *artist = libvlc_media_get_meta(m, libvlc_meta_Artist);
+	char *album = libvlc_media_get_meta(m, libvlc_meta_Album);
+	char *genre = libvlc_media_get_meta(m, libvlc_meta_Genre);
 
-  if(title == NULL || artist == NULL || album == NULL || genre == NULL) return Qnil;
+	if (title == NULL || artist == NULL || album == NULL || genre == NULL)
+		return Qnil;
 
-  VALUE meta = rb_hash_new();
-  rb_hash_aset(meta, ID2SYM(rb_intern("title")), rb_str_new_cstr(title));
-  rb_hash_aset(meta, ID2SYM(rb_intern("artist")), rb_str_new_cstr(artist));
-  rb_hash_aset(meta, ID2SYM(rb_intern("album")), rb_str_new_cstr(album));
-  rb_hash_aset(meta, ID2SYM(rb_intern("genre")), rb_str_new_cstr(genre));
+	VALUE meta = rb_hash_new();
+	rb_hash_aset(meta, ID2SYM(rb_intern("title")), rb_str_new_cstr(title));
+	rb_hash_aset(meta, ID2SYM(rb_intern("artist")), rb_str_new_cstr(artist));
+	rb_hash_aset(meta, ID2SYM(rb_intern("album")), rb_str_new_cstr(album));
+	rb_hash_aset(meta, ID2SYM(rb_intern("genre")), rb_str_new_cstr(genre));
 
-  return meta;
+	return meta;
+}
+
+VALUE
+rb_music_time(VALUE msc)
+{
+	if(mp == NULL) return Qnil;
+
+	return INT2NUM(libvlc_media_player_get_time(mp));
+}
+
+VALUE
+rb_music_volume(VALUE msc)
+{
+	if(mp == NULL) return Qnil;
+
+	return INT2NUM(libvlc_audio_get_volume(mp));
+}
+
+VALUE
+rb_music_set_volume(VALUE msc, VALUE rvolume)
+{
+	if(mp == NULL) return Qnil;
+
+	libvlc_audio_set_volume(mp, NUM2INT(rvolume));
+
+	return rvolume;
+}
+
+void
+intern_stop()
+{
+	if (m == NULL || mp == NULL) return ;
+
+	/* Stop playing */
+	libvlc_media_player_stop(mp);
+
+	/* Free the media_player */
+	libvlc_media_player_release(mp);
+
+	m = NULL;
+	mp = NULL;
+	em = NULL;
 }
 
 VALUE
 rb_music_stop(VALUE msc)
 {
-  if(m == NULL || mp == NULL) return Qnil;
-  
-  /* Stop playing */
-  libvlc_media_player_stop(mp);
+	if (m == NULL || mp == NULL) return Qnil;
 
-  /* Free the media */
-  libvlc_media_release(m);
+	intern_stop();
 
-  /* Free the media_player */
-  libvlc_media_player_release(mp);
-  
-  m = NULL;
-  mp = NULL;
+	return Qnil;
+}
 
-  return Qnil;
+void
+intern_play(libvlc_media_t *cmedia)
+{
+	/* Stop music if already playing */
+	if (mp != NULL)
+		intern_stop();
+
+	/* Set new media */
+	m = cmedia;
+
+	/* Create a media player */
+	mp = libvlc_media_player_new_from_media(m);
+
+	/* Create a media player event manager */
+	em = libvlc_media_player_event_manager(mp);
+
+	/* Play the media_player */
+	libvlc_media_player_play(mp);
+
+	/* Wait the media_player */
+	while (libvlc_media_player_get_state(mp) != libvlc_Playing);
 }
 
 VALUE
 rb_music_play(VALUE msc, VALUE rpath)
 {
-  /* Stop music if already playing */
-  if(mp != NULL) {
-    rb_music_stop(msc);
-  }
+	/* Convert Ruby String to C String */
+	char *cpath = rb_string_value_cstr(&rpath);
 
-  /* Convert Ruby String to C String */
-  char *cpath = rb_string_value_cstr(&rpath);
+	/* Check if rpath is a valid path of file */
+	if (access(cpath, F_OK) != 0)
+		rb_raise(rb_eArgError, "File does not exist");
 
-  /* Check if rpath is a valid path of file */
-  if(access(cpath, F_OK) != 0) {
-    rb_raise(rb_eArgError, "File does not exist");
-  }
+	/* Create a new media */
+	libvlc_media_t *cmedia = libvlc_media_new_path(inst, cpath);
 
-  /* Create a new media */
-  m = libvlc_media_new_path(inst, cpath);
+	/* Play media */
+	intern_play(cmedia);
 
-  /* Create a media player */
-  mp = libvlc_media_player_new_from_media(m);
+	return rb_music_meta(msc);
+}
 
-  /* Play the media_player */
-  libvlc_media_player_play(mp);
- 
-  /* Wait the media_player */
-  while(libvlc_media_player_get_state(mp) != libvlc_Playing);
+VALUE
+rb_music_forward(VALUE msc, VALUE rmseconds)
+{
+	if(mp == NULL) return Qnil;
 
-  return rb_music_meta(msc);
+	/* Convert number of Ruby to int of C */
+	int cmseconds = NUM2INT(rmseconds);
+
+	/* Get time of media player */
+	int time = libvlc_media_player_get_time(mp);
+
+	/* Add milliseconds for this time */
+	libvlc_media_player_set_time(mp, time + cmseconds);
+
+	return Qnil;
+}
+
+VALUE
+rb_music_backward(VALUE msc, VALUE rmseconds)
+{
+	if(mp == NULL) return Qnil;
+
+	/* Convert number of Ruby to int of C */
+	int cmseconds = NUM2INT(rmseconds);
+
+	/* Get time of media player */
+	int time = libvlc_media_player_get_time(mp);
+
+	/* Remove milliseconds for this time */
+	int current_time = time - cmseconds;
+
+	/* Ensure that value is positive */
+	if(current_time < 0) current_time = 0;
+
+	/* Set the time */
+	libvlc_media_player_set_time(mp, current_time);
+
+	return Qnil;
+}
+
+VALUE
+rb_media_load(VALUE mda, VALUE rpath)
+{
+	/* Convert Ruby String to C String */
+	char *cpath = rb_string_value_cstr(&rpath);
+
+	/* Check if rpath is a valid path of file */
+	if (access(cpath, F_OK) != 0)
+		rb_raise(rb_eArgError, "File does not exist");
+
+	/* Create a new media */
+	libvlc_media_t *cmedia = libvlc_media_new_path(inst, cpath);
+
+	/* Parse the media to retrieve its metadata */
+	libvlc_media_parse(cmedia);
+
+	/* Get metadata of media */
+	char *title = libvlc_media_get_meta(cmedia, libvlc_meta_Title);
+	char *artist = libvlc_media_get_meta(cmedia, libvlc_meta_Artist);
+	char *album = libvlc_media_get_meta(cmedia, libvlc_meta_Album);
+	char *genre = libvlc_media_get_meta(cmedia, libvlc_meta_Genre);
+
+	if (title == NULL || artist == NULL || album == NULL || genre == NULL)
+		return Qnil;
+
+	/* Convert to a Ruby type */
+	VALUE rbmedia = Data_Wrap_Struct(rb_cObject, 0, free, cmedia);
+
+	/* Call Media.new */
+	VALUE media_obj = rb_funcall(rb_cMedia, rb_intern("new"), 0);
+
+	/* Set media wraped */
+	rb_iv_set(media_obj, "@media_intern", rbmedia);
+
+	/* Set the attributes of object media */
+	rb_iv_set(media_obj, "@title", rb_str_new_cstr(title));
+	rb_iv_set(media_obj, "@artist", rb_str_new_cstr(artist));
+	rb_iv_set(media_obj, "@album", rb_str_new_cstr(album));
+	rb_iv_set(media_obj, "@genre", rb_str_new_cstr(genre));
+
+	return media_obj;
+}
+
+VALUE
+rb_media_play(VALUE mda)
+{
+	libvlc_media_t *cmedia;
+
+	/* Get the struct media in Ruby object */
+	VALUE rmedia = rb_ivar_get(mda, rb_intern("@media_intern"));
+
+	/* Convert to struct C */
+	Data_Get_Struct(rmedia, libvlc_media_t, cmedia);
+
+	/* Play media */
+	intern_play(cmedia);
+}
+
+VALUE
+rb_callback_next(void *arg)
+{
+	VALUE *p_plt = (VALUE *) arg;
+
+	/* Call play_list.next */
+	rb_funcall(*p_plt, rb_intern("next"), 0);
+
+	/* Free memory */
+	free(p_plt);
+
+	return Qnil;
+}
+
+void
+intern_callback_next(const libvlc_event_t *event, void *user_data)
+{
+	/* Convert to VALUE* */
+	VALUE *p_plt = (VALUE *) user_data;
+
+	/* Call in thread RUBY */
+	rb_thread_create(rb_callback_next, user_data);
+}
+
+VALUE
+rb_playlist_intern_play(VALUE plt, VALUE mda)
+{
+	/* Call media.play */
+	rb_funcall(mda, rb_intern("play"), 0);
+
+	/* Get memory on heap to reference of object playlist */
+	VALUE *p_plt = malloc(sizeof(VALUE));
+	*p_plt = plt;
+
+	/* When a music end call intern_callback_next */
+	if(libvlc_event_attach(em, libvlc_MediaPlayerEndReached, intern_callback_next, p_plt) != 0) {
+		printf("ERROR ON HANDLER\n");
+		fflush(stdout);
+
+		exit(1);
+	}
+
+	return Qnil;
 }
 
 void
 Init_musicrb(void)
 {
-  /* Load the VLC engine */
-  inst = libvlc_new(0, NULL);
+	/* Load the VLC engine */
+	inst = libvlc_new(0, NULL);
 
-  rb_cMusic = rb_define_class("Music", rb_cObject);
-  rb_define_singleton_method(rb_cMusic, "play", rb_music_play, 1);
-  rb_define_singleton_method(rb_cMusic, "stop", rb_music_stop, 0);
-  rb_define_singleton_method(rb_cMusic, "meta", rb_music_meta, 0);
+	rb_cMusic = rb_const_get(rb_cObject, rb_intern("Music"));
+	rb_define_singleton_method(rb_cMusic, "play", rb_music_play, 1);
+	rb_define_singleton_method(rb_cMusic, "forward", rb_music_forward, 1);
+	rb_define_singleton_method(rb_cMusic, "backward", rb_music_backward, 1);
+	rb_define_singleton_method(rb_cMusic, "stop", rb_music_stop, 0);
+	rb_define_singleton_method(rb_cMusic, "meta", rb_music_meta, 0);
+	rb_define_singleton_method(rb_cMusic, "time", rb_music_time, 0);
+	rb_define_singleton_method(rb_cMusic, "volume", rb_music_volume, 0);
+	rb_define_singleton_method(rb_cMusic, "volume=", rb_music_set_volume, 1);
+
+	rb_cMedia = rb_const_get(rb_cMusic, rb_intern("Media"));
+	rb_define_singleton_method(rb_cMedia, "load", rb_media_load, 1);
+	rb_define_method(rb_cMedia, "play", rb_media_play, 0);
+
+	rb_cPlayList = rb_const_get(rb_cMusic, rb_intern("PlayList"));
+	rb_define_private_method(rb_cPlayList, "intern_play", rb_playlist_intern_play, 1);
 }
