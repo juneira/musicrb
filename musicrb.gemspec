@@ -1,4 +1,4 @@
-Gem::Specification.new "musicrb", "0.1.0" do |s|
+Gem::Specification.new "musicrb", "1.0.0" do |s|
   s.summary     = "A player for music"
   s.description = "A player for music"
   s.authors     = ["juneira"]
@@ -8,4 +8,3 @@ Gem::Specification.new "musicrb", "0.1.0" do |s|
   s.license     = "MIT"
   s.extensions  = %w[ext/musicrb/extconf.rb]
 end
-
