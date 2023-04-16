@@ -101,6 +101,36 @@ class PlayListTest < Minitest::Test
     assert_equal [meta[:title], meta[:artist], meta[:album], meta[:genre]], SECOND_MUSIC_METADATA
   end
 
+  def test_playlist_to_string_when_is_not_playing
+    play_list = load_medias
+
+    assert_equal play_list.to_s, "Playlist: any\n1 - #{FIRST_MUSIC_METADATA.join(" | ")}\n2 - #{SECOND_MUSIC_METADATA.join(" | ")}" + "\n"
+  end
+
+  def test_playlist_to_string_when_is_playing_first_music
+    play_list = load_medias
+    play_list.play
+
+    assert_equal play_list.to_s, "Playlist: any\n► 1 - #{FIRST_MUSIC_METADATA.join(" | ")}\n2 - #{SECOND_MUSIC_METADATA.join(" | ")}" + "\n"
+  end
+
+  def test_playlist_to_string_when_is_playing_second_music
+    play_list = load_medias
+    play_list.next
+
+    assert_equal play_list.to_s, "Playlist: any\n1 - #{FIRST_MUSIC_METADATA.join(" | ")}\n► 2 - #{SECOND_MUSIC_METADATA.join(" | ")}" + "\n"
+  end
+
+  def test_playlist_to_string_when_is_playing_and_another_playlist_play_after
+    play_list = load_medias
+    play_list.play
+
+    another_play_list = load_medias
+    another_play_list.play
+
+    assert_equal play_list.to_s, "Playlist: any\n1 - #{FIRST_MUSIC_METADATA.join(" | ")}\n2 - #{SECOND_MUSIC_METADATA.join(" | ")}" + "\n"
+  end
+
   private
 
   def load_medias
