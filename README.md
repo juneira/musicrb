@@ -82,3 +82,4 @@ This gem was tested only on:
 OS: *Linux - Ubuntu 22.04.1 LTS*
 
 Ruby: *2.7.7 version*
+
