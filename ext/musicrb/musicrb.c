@@ -8,10 +8,12 @@
 
 VALUE rb_cMusic;
 VALUE rb_cMedia;
+VALUE rb_cPlayList;
 
 libvlc_instance_t *inst;
 libvlc_media_t *m;
 libvlc_media_player_t *mp;
+libvlc_event_manager_t *em;
 
 VALUE
 rb_music_meta(VALUE msc)
@@ -79,6 +81,7 @@ intern_stop()
 
 	m = NULL;
 	mp = NULL;
+	em = NULL;
 }
 
 VALUE
@@ -103,6 +106,9 @@ intern_play(libvlc_media_t *cmedia)
 
 	/* Create a media player */
 	mp = libvlc_media_player_new_from_media(m);
+
+	/* Create a media player event manager */
+	em = libvlc_media_player_event_manager(mp);
 
 	/* Play the media_player */
 	libvlc_media_player_play(mp);
@@ -228,6 +234,51 @@ rb_media_play(VALUE mda)
 	intern_play(cmedia);
 }
 
+VALUE
+rb_callback_next(void *arg)
+{
+	VALUE *p_plt = (VALUE *) arg;
+
+	/* Call play_list.next */
+	rb_funcall(*p_plt, rb_intern("next"), 0);
+
+	/* Free memory */
+	free(p_plt);
+
+	return Qnil;
+}
+
+void
+intern_callback_next(const libvlc_event_t *event, void *user_data)
+{
+	/* Convert to VALUE* */
+	VALUE *p_plt = (VALUE *) user_data;
+
+	/* Call in thread RUBY */
+	rb_thread_create(rb_callback_next, user_data);
+}
+
+VALUE
+rb_playlist_intern_play(VALUE plt, VALUE mda)
+{
+	/* Call media.play */
+	rb_funcall(mda, rb_intern("play"), 0);
+
+	/* Get memory on heap to reference of object playlist */
+	VALUE *p_plt = malloc(sizeof(VALUE));
+	*p_plt = plt;
+
+	/* When a music end call intern_callback_next */
+	if(libvlc_event_attach(em, libvlc_MediaPlayerEndReached, intern_callback_next, p_plt) != 0) {
+		printf("ERROR ON HANDLER\n");
+		fflush(stdout);
+
+		exit(1);
+	}
+
+	return Qnil;
+}
+
 void
 Init_musicrb(void)
 {
@@ -247,4 +298,7 @@ Init_musicrb(void)
 	rb_cMedia = rb_const_get(rb_cMusic, rb_intern("Media"));
 	rb_define_singleton_method(rb_cMedia, "load", rb_media_load, 1);
 	rb_define_method(rb_cMedia, "play", rb_media_play, 0);
+
+	rb_cPlayList = rb_const_get(rb_cMusic, rb_intern("PlayList"));
+	rb_define_private_method(rb_cPlayList, "intern_play", rb_playlist_intern_play, 1);
 }

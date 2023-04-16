@@ -24,7 +24,9 @@ class Music
       @current_media = 0 if @current_media >= @list.length
       media = @list[@current_media]
 
-      media&.play
+      return if media == nil
+
+      intern_play(media)
 
       media
     end

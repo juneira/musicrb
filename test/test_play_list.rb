@@ -87,6 +87,20 @@ class PlayListTest < Minitest::Test
     assert_equal [media.title, media.artist, media.album, media.genre], SECOND_MUSIC_METADATA
   end
 
+  def test_autoplay
+    play_list = load_medias
+    play_list.play
+    meta = Music.meta
+
+    assert_equal [meta[:title], meta[:artist], meta[:album], meta[:genre]], FIRST_MUSIC_METADATA
+    Music.forward(142500)
+
+    sleep(1)
+    meta = Music.meta
+
+    assert_equal [meta[:title], meta[:artist], meta[:album], meta[:genre]], SECOND_MUSIC_METADATA
+  end
+
   private
 
   def load_medias
