@@ -1,4 +1,6 @@
 # Music RB
+[![Gem Version](https://badge.fury.io/rb/musicrb.svg)](https://badge.fury.io/rb/musicrb)
+
 A player for music to our Ruby ❤️
 
 ## Requirement
